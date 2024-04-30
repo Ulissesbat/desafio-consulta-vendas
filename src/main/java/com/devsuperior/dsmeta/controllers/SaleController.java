@@ -62,21 +62,22 @@ public class SaleController {
 	}
 
 
-	 @GetMapping("/summary")
-	    public ResponseEntity<List<SaleSummaryDTO>> getSalesSummary(
-	            @RequestParam(value = "minDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate minDate,
-	            @RequestParam(value = "maxDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate maxDate) {
+	@GetMapping("/summary")
+	public ResponseEntity<List<SaleSummaryDTO>> getSalesSummary(
+	        @RequestParam(value = "minDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate minDate,
+	        @RequestParam(value = "maxDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate maxDate) {
 
-	        if (minDate == null) {
-	            minDate = LocalDate.now().minusYears(1);
-	        }
-	        if (maxDate == null) {
-	            maxDate = LocalDate.now();
-	        }
-
-	        List<SaleSummaryDTO> salesSummary = service.getSalesSummary(minDate, maxDate);
-	        return ResponseEntity.ok(salesSummary);
+	    if (minDate == null) {
+	        minDate = LocalDate.now().minusYears(1);
 	    }
+	    if (maxDate == null) {
+	        maxDate = LocalDate.now();
+	    }
+
+	    List<SaleSummaryDTO> salesSummary = service.getSalesSummary(minDate, maxDate);
+	    return ResponseEntity.ok(salesSummary);
+	}
+
 
 
 
