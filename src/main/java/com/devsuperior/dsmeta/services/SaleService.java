@@ -36,14 +36,16 @@ public class SaleService {
 	        }
 	    }
 
-	  public List<SaleSummaryDTO> getSalesSummary(LocalDate minDate, LocalDate maxDate) {
-	        List<SaleSummaryProjection> salesSummaryProjections = repository.findSalesSummary(minDate, maxDate);
-	        List<SaleSummaryDTO> salesSummaryDTOs = salesSummaryProjections.stream()
-	                .map(SaleSummaryDTO::new)
-	                .collect(Collectors.toList());
-	        return salesSummaryDTOs;
-	    }
 	
+	  public List<SaleSummaryDTO> getSalesSummary(LocalDate minDate, LocalDate maxDate) {
+	    
+	      List<SaleSummaryProjection> salesSummaryProjections = repository.findSalesSummary(minDate, maxDate, "");
+	      List<SaleSummaryDTO> salesSummaryDTOs = salesSummaryProjections.stream().map(SaleSummaryDTO::new).collect(Collectors.toList());
+	      
+	      return salesSummaryDTOs;
+	  }
+
+
 	 public Page<SaleMinDTO> getSalesByDateAndName(LocalDate startDate, LocalDate endDate, String name, Pageable pageable) {
 	        Page<Sale> salesPage;
 	        if (name != null && !name.isEmpty()) {

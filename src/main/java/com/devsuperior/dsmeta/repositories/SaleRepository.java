@@ -17,11 +17,10 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
     Page<Sale> findByDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
 	
     Page<Sale> findByDateBetweenAndSellerNameContaining(LocalDate startDate, LocalDate endDate, String name, Pageable pageable);
-
-    @Query("SELECT s.seller.name AS sellerName, SUM(s.amount) AS totalSales " +
-            "FROM Sale s " +
-            "WHERE s.date BETWEEN :minDate AND :maxDate " +
-            "GROUP BY s.seller.name")
-    List<SaleSummaryProjection> findSalesSummary(@Param("minDate") LocalDate minDate, @Param("maxDate") LocalDate maxDate);
+    @Query("SELECT obj FROM Sale obj JOIN FETCH obj.seller s" +
+    	       " WHERE obj.date >= :minDate" +
+    	       " AND obj.date <= :maxDate" +
+    	       " AND UPPER(s.name) LIKE UPPER(CONCAT('%', :name, '%'))")
+    	List<SaleSummaryProjection> findSalesSummary(@Param("minDate") LocalDate minDate, @Param("maxDate") LocalDate maxDate, @Param("name") String name);
 
 }
