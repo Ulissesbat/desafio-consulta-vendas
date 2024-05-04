@@ -1,6 +1,8 @@
 package com.devsuperior.dsmeta.services;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,38 +23,42 @@ public class SaleService {
 
 	@Autowired
 	private SaleRepository repository;
-	
+
 	public SaleMinDTO findById(Long id) {
 		Optional<Sale> result = repository.findById(id);
 		Sale entity = result.get();
 		return new SaleMinDTO(entity);
 	}
-	
-	  public Page<Sale> getSalesReport(LocalDate startDate, LocalDate endDate, String name, Pageable pageable) {
-	        if (name != null && !name.isEmpty()) {
-	            return repository.findByDateBetweenAndSellerNameContaining(startDate, endDate, name, pageable);
-	        } else {
-	            return repository.findByDateBetween(startDate, endDate, pageable);
-	        }
-	    }
 
-	
-	  public List<SaleSummaryDTO> getSalesSummary(LocalDate minDate, LocalDate maxDate) {
-	    
-	      List<SaleSummaryProjection> salesSummaryProjections = repository.findSalesSummary(minDate, maxDate, "");
-	      List<SaleSummaryDTO> salesSummaryDTOs = salesSummaryProjections.stream().map(SaleSummaryDTO::new).collect(Collectors.toList());
-	      
-	      return salesSummaryDTOs;
-	  }
+	public List<SaleMinDTO> getSalesReport(LocalDate minDate, LocalDate maxDate, String name) {
+		List<Sale> sales;
+		if (name != null && !name.isEmpty()) {
+			sales = repository.findByDateBetweenAndSellerNameContaining(minDate, maxDate, name);
+		} else {
+			sales = repository.findByDateBetween(minDate, maxDate);
+		}
+
+		return sales.stream()
+				.map(SaleMinDTO::new)
+				.collect(Collectors.toList());
+	}
+	public List<SaleMinDTO> getSalesReportLast12Months() {
+		LocalDate startDate = LocalDate.now().minusMonths(12);
+		LocalDate endDate = LocalDate.now();
+		List<Sale> sales = repository.findByDateBetween(startDate, endDate);
+		return sales.stream().map(SaleMinDTO::new).collect(Collectors.toList());
+	}
 
 
-	 public Page<SaleMinDTO> getSalesByDateAndName(LocalDate startDate, LocalDate endDate, String name, Pageable pageable) {
-	        Page<Sale> salesPage;
-	        if (name != null && !name.isEmpty()) {
-	            salesPage = repository.findByDateBetweenAndSellerNameContaining(startDate, endDate, name, pageable);
-	        } else {
-	            salesPage = repository.findByDateBetween(startDate, endDate, pageable);
-	        }
-	        return salesPage.map(SaleMinDTO::new);
-	    }
+	public List<SaleSummaryDTO> getSalesSummary(LocalDate minDate, LocalDate maxDate) {
+		List<SaleSummaryProjection> salesSummaryProjections = repository.findSalesSummaryBySeller(minDate, maxDate, "");
+		List<SaleSummaryDTO> salesSummaryDTO = salesSummaryProjections.stream().map(SaleSummaryDTO::new).collect(Collectors.toList());
+		return salesSummaryDTO;
+	}
+	public List<SaleSummaryDTO> getSalesSummaryBySeller(LocalDate startDate, LocalDate endDate) {
+		List<SaleSummaryProjection> salesSummaryProjections = repository.findSalesSummaryBySeller(startDate,endDate,"");
+		List<SaleSummaryDTO> salesSummaryDTO = salesSummaryProjections.stream().map(SaleSummaryDTO::new).collect(Collectors.toList());
+		return salesSummaryDTO;
+	}
+
 }

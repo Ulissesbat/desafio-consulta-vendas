@@ -14,13 +14,24 @@ import com.devsuperior.dsmeta.projection.SaleSummaryProjection;
 
 public interface SaleRepository extends JpaRepository<Sale, Long> {
 
-    Page<Sale> findByDateBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
-	
-    Page<Sale> findByDateBetweenAndSellerNameContaining(LocalDate startDate, LocalDate endDate, String name, Pageable pageable);
-    @Query("SELECT obj FROM Sale obj JOIN FETCH obj.seller s" +
-    	       " WHERE obj.date >= :minDate" +
-    	       " AND obj.date <= :maxDate" +
-    	       " AND UPPER(s.name) LIKE UPPER(CONCAT('%', :name, '%'))")
-    	List<SaleSummaryProjection> findSalesSummary(@Param("minDate") LocalDate minDate, @Param("maxDate") LocalDate maxDate, @Param("name") String name);
+	List<Sale> findByDateBetweenAndSellerNameContaining(LocalDate startDate, LocalDate endDate, String name);
+	List<Sale> findByDateBetween(LocalDate startDate, LocalDate endDate);
+	@Query("SELECT s.seller.name AS sellerName, SUM(s.amount) AS totalSales " +
+			"FROM Sale s " +
+			"WHERE s.date BETWEEN :startDate AND :endDate " +
+			"AND UPPER(s.seller.name) LIKE UPPER(CONCAT('%', :name, '%')) " +
+			"GROUP BY s.seller.name")
+	List<SaleSummaryProjection> findSalesSummaryBySeller(
+			@Param("startDate") LocalDate startDate,
+			@Param("endDate") LocalDate endDate,
+			@Param("name") String name);
+
+	@Query("SELECT sale FROM Sale sale JOIN FETCH sale.seller " +
+			"WHERE sale.date BETWEEN :min AND :max " +
+			"AND UPPER(sale.seller.name) LIKE UPPER(CONCAT('%', :name, '%'))")
+	List<Sale> findSalesBetweenDatesAndSellerName(
+			@Param("min") LocalDate min,
+			@Param("max") LocalDate max,
+			@Param("name") String name);
 
 }

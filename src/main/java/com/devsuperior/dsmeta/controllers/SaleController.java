@@ -36,50 +36,45 @@ public class SaleController {
 	}
 
 	@GetMapping("/report")
-	public ResponseEntity<Page<SaleMinDTO>> getSalesReportByDateAndName(
-	        @RequestParam(value = "minDate", required = false) String minDateStr,
-	        @RequestParam(value = "maxDate", required = false) String maxDateStr,
-	        @RequestParam(value = "name", required = false, defaultValue = "") String name,
-	        @PageableDefault(size = 10, sort = {"date"}, direction = Sort.Direction.DESC) Pageable pageable) {
-	    
-	    LocalDate minDate = null;
-	    if (minDateStr != null && !minDateStr.isEmpty()) {
-	        minDate = LocalDate.parse(minDateStr);
-	    } else {
-	        minDate = LocalDate.now().minusYears(1);
-	    }
+	public ResponseEntity<List<SaleMinDTO>> getSalesReportByDateAndName(
+			@RequestParam(value = "minDate", required = false) String minDateStr,
+			@RequestParam(value = "maxDate", required = false) String maxDateStr,
+			@RequestParam(value = "name", required = false, defaultValue = "") String name) {
 
-	    LocalDate maxDate = null;
-	    if (maxDateStr != null && !maxDateStr.isEmpty()) {
-	        maxDate = LocalDate.parse(maxDateStr);
-	    } else {
-	        maxDate = LocalDate.now();
-	    }
+		LocalDate minDate = null;
+		if (minDateStr != null && !minDateStr.isEmpty()) {
+			minDate = LocalDate.parse(minDateStr);
+		} else {
+			minDate = LocalDate.now().minusYears(1);
+		}
 
-	    Page<Sale> salesPage = service.getSalesReport(minDate, maxDate, name, pageable);
-	    Page<SaleMinDTO> dtoPage = salesPage.map(SaleMinDTO::new);
-	    return ResponseEntity.ok(dtoPage);
+		LocalDate maxDate = null;
+		if (maxDateStr != null && !maxDateStr.isEmpty()) {
+			maxDate = LocalDate.parse(maxDateStr);
+		} else {
+			maxDate = LocalDate.now();
+		}
+
+		List<SaleMinDTO> sales = service.getSalesReport(minDate, maxDate, name);
+		return ResponseEntity.ok(sales);
 	}
+
 
 
 	@GetMapping("/summary")
 	public ResponseEntity<List<SaleSummaryDTO>> getSalesSummary(
-	        @RequestParam(value = "minDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate minDate,
-	        @RequestParam(value = "maxDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate maxDate) {
+			@RequestParam(value = "minDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate minDate,
+			@RequestParam(value = "maxDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate maxDate) {
 
-	    if (minDate == null) {
-	        minDate = LocalDate.now().minusYears(1);
-	    }
-	    if (maxDate == null) {
-	        maxDate = LocalDate.now();
-	    }
+		if (minDate == null) {
+			minDate = LocalDate.now().minusYears(1);
+		}
+		if (maxDate == null) {
+			maxDate = LocalDate.now();
+		}
 
-	    List<SaleSummaryDTO> salesSummary = service.getSalesSummary(minDate, maxDate);
-	    return ResponseEntity.ok(salesSummary);
+		List<SaleSummaryDTO> salesSummary = service.getSalesSummary(minDate, maxDate);
+		return ResponseEntity.ok(salesSummary);
 	}
-
-
-
-
 
 }
