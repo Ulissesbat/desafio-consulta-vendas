@@ -2,6 +2,7 @@ package com.devsuperior.dsmeta.services;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
@@ -30,35 +31,18 @@ public class SaleService {
 		return new SaleMinDTO(entity);
 	}
 
-	public List<SaleMinDTO> getSalesReport(LocalDate minDate, LocalDate maxDate, String name) {
-		List<Sale> sales;
-		if (name != null && !name.isEmpty()) {
-			sales = repository.findByDateBetweenAndSellerNameContaining(minDate, maxDate, name);
-		} else {
-			sales = repository.findByDateBetween(minDate, maxDate);
-		}
+	public Page<SaleMinDTO> getSalesReport(String minDate, String maxDate, String name, Pageable pageable) {
+		LocalDate today = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
 
-		return sales.stream()
-				.map(SaleMinDTO::new)
-				.collect(Collectors.toList());
+		LocalDate max = (maxDate == null || maxDate.equals("")) ? today : LocalDate.parse(maxDate);
+		LocalDate min = (minDate == null || minDate.equals("")) ? max.minusYears(1L) : LocalDate.parse(minDate);
+		Page<Sale> result = repository.searchSales(min, max, name, pageable);
+
+		return result.map(x -> new SaleMinDTO(x));
 	}
-	public List<SaleMinDTO> getSalesReportLast12Months() {
-		LocalDate startDate = LocalDate.now().minusMonths(12);
-		LocalDate endDate = LocalDate.now();
-		List<Sale> sales = repository.findByDateBetween(startDate, endDate);
-		return sales.stream().map(SaleMinDTO::new).collect(Collectors.toList());
-	}
-
-
 	public List<SaleSummaryDTO> getSalesSummary(LocalDate minDate, LocalDate maxDate) {
-		List<SaleSummaryProjection> salesSummaryProjections = repository.findSalesSummaryBySeller(minDate, maxDate, "");
-		List<SaleSummaryDTO> salesSummaryDTO = salesSummaryProjections.stream().map(SaleSummaryDTO::new).collect(Collectors.toList());
-		return salesSummaryDTO;
+		maxDate = LocalDate.now();
+		minDate = maxDate.minus(Period.ofMonths(12));
+		return repository.getSalesSummary(minDate, maxDate);
 	}
-	public List<SaleSummaryDTO> getSalesSummaryBySeller(LocalDate startDate, LocalDate endDate) {
-		List<SaleSummaryProjection> salesSummaryProjections = repository.findSalesSummaryBySeller(startDate,endDate,"");
-		List<SaleSummaryDTO> salesSummaryDTO = salesSummaryProjections.stream().map(SaleSummaryDTO::new).collect(Collectors.toList());
-		return salesSummaryDTO;
-	}
-
 }
